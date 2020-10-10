@@ -1,0 +1,215 @@
+#include <stdio.h>
+#pragma warning(disable:4996)
+#include <windows.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <time.h>
+#define MAZE_SIZE 19
+#define MOUSE 2
+#define UP 1
+#define RIGHT 2
+#define DOWN 3
+#define LEFT 4
+int *rec;
+int sx = 0;
+int sy = 1;
+int index = 0;
+int maze[MAZE_SIZE][MAZE_SIZE] =
+
+{ {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+{1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
+{1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1},
+{1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+{1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+{1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1},
+{1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1} };
+
+void record(int x, int y)
+{
+	rec[index++] = x;
+	rec[index++] = y;
+}
+
+void gotoxy(int x, int y)
+{
+	COORD Pos = { x,y };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
+}
+
+void go_forward(int *x,int *y,int dir)
+{
+	gotoxy(*x + 1, *y + 1);
+	putch(' ');
+	if (dir == RIGHT)
+	{
+		*x += 1;
+		record(*x, *y);
+		gotoxy(*x + 1, *y + 1);
+		putch(MOUSE);
+	}
+	else if (dir == DOWN)
+	{
+		*y += 1;
+		record(*x, *y);
+		gotoxy(*x + 1, *y + 1);
+		putch(MOUSE);
+	}
+	else if (dir == LEFT)
+	{
+		*x -= 1;
+		record(*x, *y);
+		gotoxy(*x + 1, *y + 1);
+		putch(MOUSE);
+	}
+	else if (dir == UP)
+	{
+		*y -= 1;
+		record(*x, *y);
+		gotoxy(*x + 1, *y + 1);
+		putch(MOUSE);
+	}
+}
+
+int face_maze(int a[][MAZE_SIZE],int x, int y, int dir)
+{
+	if (dir == RIGHT)
+	{
+		x += 1;
+		return a[y][x];
+	}
+	else if (dir == DOWN)
+	{
+		y += 1;
+		return a[y][x];
+	}
+	else if (dir == LEFT)
+	{
+		x -= 1;
+		return a[y][x];
+	}
+	else if (dir == UP)
+	{
+		y -= 1;
+		return a[y][x];
+	}
+}
+
+void turn_left(int *dir)
+{
+
+	*dir -= 1;
+	if (*dir < 0)
+	{
+		*dir == 4;
+	}
+}
+
+void turn_right(int *dir)
+{
+
+	*dir += 1;
+	if (*dir > 4)
+	{
+		*dir == 1;
+	}
+}
+
+int still_in_maze(int x, int y)
+{
+	if ((x >= 0) && (y >= 0) && (x < MAZE_SIZE - 1) && (y < MAZE_SIZE - 1))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void new_maze(int rec[MAZE_SIZE * MAZE_SIZE])
+{
+	int i = 0;
+	int j = 0;
+	int m, k = 0;
+
+	while(rec[i] >= 0)
+	{
+		j = i;
+		while(rec[j] >= 0)
+		{
+			if ((rec[i] == rec[j]) && (rec[i + 1] == rec[j + 1]))
+			{
+				m = i;
+				k = j;
+				while (rec[k]>= 0)
+				{
+					rec[m++] = rec[k++];
+				}
+				rec[m + 1] = -1;
+			}
+			j += 2;
+		}
+		i += 2;
+	}
+}
+
+void main()
+{
+	rec = (int*)calloc(MAZE_SIZE * MAZE_SIZE, sizeof(int));
+	int x, y;
+	for (y = 0; y < MAZE_SIZE; y++)
+	{
+		if (y == 0) gotoxy(0, 1);
+		for (x = 0; x < MAZE_SIZE; x++)
+		{
+			if (x == 0) printf(" ");
+			if (maze[y][x] == 1) printf("%%");
+			else printf(" ");
+		}
+		printf("\n");
+	}
+	int dir = RIGHT;
+	record(sx, sy);
+	gotoxy(sx + 1, sy + 1);
+	putch(MOUSE);
+	go_forward(&sx, &sy, dir);
+	while (still_in_maze(sx,sy)) {
+		for (int i = 0; i < 10000000; i++) {};
+		turn_right(&dir);
+		while(face_maze(maze, sx, sy, dir))
+		{
+			turn_left(&dir);
+		}
+		go_forward(&sx, &sy, dir);
+	}
+	record(-1, -1);
+	new_maze(rec);
+
+	int N = 0;
+
+	while (rec[N] >= 0)
+	{
+		x = rec[N++];
+		y = rec[N++];
+		gotoxy(x + 1, y + 1);
+		putch(MOUSE);
+		for (int m = 0; m < 10000000; m++) {};
+		gotoxy(x + 1, y + 1);
+		putch(' ');
+	}
+
+	free(rec);
+	return 0;
+}

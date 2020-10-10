@@ -1,0 +1,53 @@
+void make_maze(int a[][SIZE], int N)
+{
+	for (int y = 0; y < N; y++)
+	{
+		for (int x = 0; x < N; x++)
+		{
+			a[y][x] = y * N + x;
+		}
+	}
+}
+
+void maze_print(int a[][SIZE], int N)
+{
+	for (int y = 0; y < N; y++)
+	{
+		for (int x = 0; x < N; x++)
+		{
+			printf("%d ", a[y][x]);
+		}
+		printf("\n");
+	}
+}
+
+void maze_multiple(int a[][SIZE], int b[][SIZE], int multiple_maze[][SIZE], int N)
+{
+	for (int y = 0; y < N; y++)
+	{
+		for (int x = 0;x < N;x++)
+		{
+			for (int k = 0;k < N;k++)
+			{
+				multiple_maze[y][x] += a[y][k] * b[k][x];
+			}
+		}
+	}
+}
+
+
+void main() 
+{	
+	int a[SIZE][SIZE] = { 0, };
+	make_maze(&a[0][0], SIZE);
+	printf("\n");
+
+	int b[SIZE][SIZE] = { 0, };
+	make_maze(&b[0][0], SIZE);
+
+	int a_b_multiple[SIZE][SIZE] = { 0, };
+	maze_multiple(a, b,a_b_multiple ,SIZE);
+	maze_print(a_b_multiple, SIZE);
+
+	return 0;
+}	

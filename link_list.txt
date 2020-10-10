@@ -1,0 +1,51 @@
+#include <stdio.h>
+#pragma warning(disable:4996)
+#include <stdlib.h>
+//선언
+typedef struct _node {
+	int key;
+	struct _node *next;
+}node;
+//그림에서 포인터가 가리키는 방을 생각하자.
+
+node *head, *tail;
+
+//초기화
+//head와 tail 그림
+void init_list()
+{
+	head = (node*)calloc(1,sizeof(node));
+	tail = (node*)calloc(1,sizeof(node));
+	head->next = tail;
+	tail->next = tail;
+	//뭔가 빠진거같은데;
+}
+
+
+//추가
+node *insert_after(node *t, int key)
+{
+	node *temp;
+	temp = (node*)calloc(1, sizeof(node));
+	temp->next = t->next;
+	t->next = temp;
+	temp->key = key;
+	return temp;
+}
+
+//제거
+int delete(node *n)
+{
+	node *temp;
+	if (n->next == tail) return 0;
+	temp = (node*)calloc(1, sizeof(node));
+	temp = n->next;
+	n->next = n->next->next;
+	free(temp);
+}
+
+void main()
+{
+
+	return 0;
+}

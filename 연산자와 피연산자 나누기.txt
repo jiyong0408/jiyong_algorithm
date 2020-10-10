@@ -1,0 +1,120 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 100
+
+typedef struct _stack
+{
+	char operator;
+	struct _stack *next;
+}stack;
+
+stack *head, *tail, *top;
+
+//head = top, tail = bottom;
+void init_stack_head_top()
+{
+	head = (stack*)calloc(1, sizeof(stack));
+	tail = (stack*)calloc(1, sizeof(stack));
+	head->next = tail;
+	tail->next = tail;
+	top = head->next;
+}
+
+
+//a를 스택의 top위치에 넣는다.
+stack* push_head_top(int a)
+{
+	stack *temp_add;
+	temp_add = (stack*)calloc(1, sizeof(stack));
+	temp_add->operator = a;
+
+	temp_add->next = head->next;
+	head->next = temp_add;
+	top = temp_add;
+	return temp_add;
+}
+
+//top위치에 있는 자료를 빼낸다.
+int pop_head_top()
+{
+	int key = 0;
+	if (top == tail) return NULL;
+	else
+	{
+		key = top->operator;
+		head->next = top->next;
+		free(top);
+		top = head->next;
+		return key;
+	}
+}
+
+void print_stack_head_top()
+{
+	printf("현재 스택은 : ");
+
+	while (1)
+	{
+		if (top == tail)
+		{
+			printf("the stack is clear");
+			break;
+		}
+		else
+		{
+			printf("%d ", pop_head_top());
+		}
+	}
+}
+//스택을 비워줍니다.
+void clear_stack()
+{
+	while (top != tail)
+	{
+		head->next = top->next;
+		free(top);
+		top = head->next;
+	}
+	printf("스택을 비웠습니다.");
+}
+
+void main()
+{
+	init_stack_head_top();
+	char buffer[SIZE] = { 0, };
+
+	int operand_buffer[SIZE];
+
+	gets(buffer);
+	break;
+
+	int i = 0;
+	while(buffer[i] != 0)
+	{
+		if (buffer[i] == '+' || buffer[i] == '+' || buffer[i] == '*' || buffer[i] == '/' )
+		{
+			push_head_top(buffer[i]);
+			i++;
+		}
+		else if(buffer[i] == ')')
+		{
+			printf("%c ", pop_head_top());
+			i++;
+		}
+		else if(buffer[i] != '(')
+		{
+			printf("%d ", (int)(buffer[i]) - 48);
+			i++;
+		}
+		else
+		{
+			i++;
+			continue;
+		}
+		//문자 0 은 숫자로 48임 
+		//따라서 문자 1을 숫자로 바꾸면 49이기 때문에 -48을 해서 실제 숫자와 같은 값을 출력하도록 해주자.
+	}
+}
+

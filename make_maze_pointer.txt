@@ -1,0 +1,19 @@
+void make_maze(int *a[SIZE], int N)
+{
+	for (int y = 0; y < SIZE; y++)
+	{
+		for (int x = 0; x < SIZE; x++)
+		{
+			scanf("%d ", a + SIZE*y + x);
+		}
+	}
+
+	for (int y = 0; y < SIZE; y++)
+	{
+		for (int x = 0; x < SIZE; x++)
+		{
+			printf("%d ", a[SIZE*y + x]);
+		}
+		printf("\n");
+	}
+}

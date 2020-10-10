@@ -1,0 +1,73 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#define SIZE 5
+
+
+int queue[SIZE] = { 0, };
+int rear, front;
+
+//환형 %연산자 때문에 초기값을 0으로 해서 계산이 가능하게 해준다.
+void init_queue()
+{
+	rear = 0;
+	front = 0;
+}
+
+//queue의 front가 가리키는 주소의 key값을 반환한다.
+int get()
+{
+	int key = 0;
+	if (front == rear)
+	//이건 그냥 처음 시작같은경우 밑에 비교랑 다름
+	{
+		printf("the queue is empty");
+		return NULL;
+	}
+	key = queue[front];
+	front = (front + 1) % SIZE;
+	return key;
+}
+
+//queue의 rear가 가키리는 주소와 tail이 가리키는 주소 사이에 key값을 갖는 데이터를 삽입한다.
+void put(int key)
+{
+	if ((rear + 1) % SIZE == front)
+	{
+		printf("overflow");
+		return NULL;
+	}
+	queue[rear] = key;
+	rear = (rear + 1) % SIZE;
+	//오버플로우는 원형 돌림판에서 rear가 empty 뒤에 있을때 그때 rear와 front의 관계가 저렇게됨
+}
+
+void print_queue()
+{
+	int i = front;
+	while (1)
+	{
+		if ((i % SIZE) == rear) break;
+		printf("%d ", queue[i]);
+		i = (i + 1) % SIZE;
+	}
+}
+
+void main()
+{
+	init_queue();
+	char buffer[100];
+	int key;
+	while (1)
+	{
+		gets(buffer);
+		if (buffer[0] == '\0') break;
+		key = atoi(buffer);
+		put(key);
+	}
+	print_queue();
+	printf("\n");
+	get();
+	get();
+	printf("\n");
+	print_queue();
+}

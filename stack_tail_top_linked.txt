@@ -1,0 +1,118 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 100
+
+typedef struct _stack
+{
+	int key;
+	struct _stack *next;
+}stack;
+
+stack *head, *tail, *top;
+
+//head->next = tail
+//top - tail, bottom - head;
+void init_stack_tail_top()
+{
+	head = (stack*)calloc(1, sizeof(stack));
+	tail = (stack*)calloc(1, sizeof(stack));
+	head->next = tail;
+	tail->next = tail;
+	top = head;
+}
+
+
+//a를 스택의 top위치에 넣는다. 단 tail이 top이고 head가 bottom..
+stack* push_tail_top(int a)
+{
+	stack *temp_add;
+	temp_add = (stack*)calloc(1, sizeof(stack));
+	temp_add->key = a;
+
+	temp_add->next = top->next;
+	top->next = temp_add;
+	top = temp_add;
+	return temp_add;
+}
+
+//top위치에 있는 자료를 빼낸다. 단 tail이 top이고 head가 bottom..
+int pop_tail_top()
+{
+	stack* temp_find_top;
+	temp_find_top = head;
+	int pop = 0;
+	while (temp_find_top->next != top)
+		//head->next 가 tail이라는 거랑 같은 의미의 문장이다.
+	{
+		temp_find_top = temp_find_top->next;
+	}
+
+	temp_find_top->next = top->next;
+
+	pop = top->key;
+	if (top != head)
+	{
+		free(top);
+		top = temp_find_top;
+		return pop;
+	}
+	//변수를 하나 추가안하면 free와 값참조를 거의 동시에 해야하는데 이걸 하기에 어려움이 있다.
+	//return문 뒤에 문장을 쓰면 그 문장은 컴파일러가 읽지 않는다.
+}
+
+void print_stack_tail_top()
+{
+	printf("현재 스택은 : ");
+
+	while (1)
+	{
+		if (top == head)
+		{
+			printf("the stack is clear");
+			break;
+		}
+		else
+		{
+			printf("%d ", pop_tail_top());
+		}
+	}
+}
+
+void stack_clear()
+{
+	stack* temp_find_top;
+	while (head->next != tail)
+	{
+		temp_find_top = head;
+		while (temp_find_top->next != top)
+		{
+			temp_find_top = temp_find_top->next;
+		}
+		temp_find_top->next = tail;
+		free(top);
+		top = temp_find_top;
+	}
+	printf("스택을 비웠습니다.");
+}
+
+void main()
+{
+	init_stack_tail_top();
+	char buffer[SIZE];
+	int value;
+	while (1)
+	{
+		gets(buffer);
+		if ((buffer[0] == '\0') || (top == SIZE - 1)) break;
+		value = atoi(buffer);
+		push_tail_top(value);
+	}
+	printf("\n");
+	print_stack_tail_top();
+	printf("\n");
+	stack_clear();
+	printf("\n");
+	print_stack_tail_top();
+}

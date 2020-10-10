@@ -1,0 +1,313 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#pragma warning(disable:4996)
+#define TEST 1
+
+#if TEST == 1
+
+#define SIZE 15
+#define width 1
+char test[SIZE] = { 'T','O','S','O','R','T','A','L','G','O','R','I','T','H','M' };
+char test2[SIZE + 1] = { 0 ,'T','O','S','O','R','T','A','L','G','O','R','I','T','H','M' };
+char heap[SIZE + 1] = { 0 , };
+
+
+#elif TEST == 2
+#define SIZE 7
+#define width 4
+int test[SIZE] = { 5,10,6,18,2 , 3 ,21 };
+int test1[SIZE + 1] = { 0,5,10,6,18,2, 3 ,21 };
+int heap[SIZE + 1] = { 0 , };
+#endif
+
+//heap_sort array_binary_tree
+//말단과 자식노드를 비교하며 말단이 더 크면 비교하는 노드와 자리를 바꿔준다.
+void up_head(void* base, size_t nlen, size_t size_data, int compare(const void*, const void*));
+//뿌리에서부터 자식노드를 비교하며 뿌리보다 비교하는 노드가 더 크면 노드와 자리를 바꿔준다.
+void down_heap(void* base, size_t node_postion, size_t nlen, size_t size_data, int compare(const void*, const void*));
+int compare_char(const void*, const void*);
+int compare_int(const void* a, const void* b);
+void insert_heap(void* array, void* base, size_t nlen, size_t size_data, int compare(const void*, const void*));
+void insert_heap_add(void* new, void* base, size_t *nlen, size_t size_data, int compare(const void*, const void*));
+void  heap_sort_bottom_up(void* base, size_t nlen, size_t size_data, int compare(const void*, const void*));
+
+//임의의 타입에 대한 임의의 타입의 리턴값을 주고싶은데 이건 어떻게 하면될까
+void delete_heap(void* base, size_t *nlen, size_t size_data, int compare(const void*, const void*));
+
+void main()
+{
+	int i = 1;
+	int size = SIZE;
+#if TEST == 1
+	insert_heap(&test, &heap, SIZE, width, compare_char);
+	while (i <= size)
+	{
+		printf("%c ", heap[i++]);
+	}
+	i = 1;
+	printf("\n");
+	delete_heap(&heap, &size, width, compare_char);
+	while (i <= size)
+	{
+		printf("%c ", heap[i++]);
+	}
+	printf("\n");
+
+	i = 1;
+
+	while (i <= SIZE + 1)
+	{
+		printf("%c ", test2[i++]);
+	}
+	heap_sort_bottom_up(&test2, SIZE, width, compare_char);
+
+	printf("\n");
+
+	i = 1;
+
+	while (i <= SIZE + 1)
+	{
+		printf("%c ", test2[i++]);
+	}
+#elif TEST == 2
+	insert_heap(&test, &heap, SIZE, width, compare_int);
+	while (i <= size)
+	{
+		printf("%d ", heap[i++]);
+	}
+	i = 1;
+	int x = 7;
+	printf("\n");
+	delete_heap(&heap, &size, width, compare_int);
+
+	while (i <= size)
+	{
+		printf("%d ", heap[i++]);
+	}
+	printf("\n");
+	insert_heap_add(&x, &heap, &size, width, compare_int);
+	i = 1;
+	while (i <= size)
+	{
+		printf("%d ", heap[i++]);
+	}
+	printf("\n");
+	i = 1;
+	while (i <= SIZE)
+	{
+		printf("%d ", test1[i++]);
+	}
+	heap_sort_bottom_up(&test1, SIZE, width, compare_int);
+	printf("\n");
+	i = 1;
+	while (i <= SIZE)
+	{
+		printf("%d ", test1[i++]);
+	}
+#endif
+}
+
+//앞의 인자가 크면 양수 뒤의 인자가 크면 음수
+int compare_char(const void* a, const void* b)
+{
+	return *(char*)a - *(char*)b;
+}
+
+int compare_int(const void* a, const void* b)
+{
+	return *(int*)a - *(int*)b;
+}
+//base의 첫번째 원소부터 마지막 원소까지 새로운 통에 담는데 담을때 말단에 넣고 부모노드와 비교해서 말단노드가 크면 말단노드를 부모의 위치와 바꾼다.
+//이 과정을 뿌리까지 한다.
+void insert_heap(void* array, void* base, size_t nlen, size_t size_data, int compare(const void*, const void*))
+{
+	int i = 0;
+	void *temp;
+	temp = malloc(size_data);
+	while (i < nlen)
+	{
+		//폭을 설정을 안해주면 그 다음 칸으로 못넘어감 어느정도의 폭인지 모르니까 그 행안에서 놀수도있기에 명확하지않아 오류가 발생한다.
+		memcpy(((char*)base + (1 + i) * size_data), ((char*)array + i * size_data), size_data);
+		if (i >= 1)
+		{
+			//base는 1번부터 원소가 채워져있다.
+			int j = i + 1;
+			while (j > 1)
+			{
+				//이번에 새로 들어온게 부모노드보다 크다면 위치를 바꿔주자
+				if (compare((char*)base + (j / 2) * size_data, (char*)base + j * size_data) < 0)
+				{
+					memcpy(temp, (char*)base + j * size_data, size_data);
+					memcpy((char*)base + j * size_data, (char*)base + (j / 2) * size_data, size_data);
+					memcpy((char*)base + (j / 2) * size_data, temp, size_data);
+				}
+				else break;
+				j = j / 2;
+			}
+		}
+		i++;
+	}
+	free(temp);
+}
+//heap의 뿌리노드를 제거하고 맨 마지막에 있는 노드를 뿌리로 올린다. 그리고  뿌리노드와 자식노드중 큰 것과 비교해서 내리거나 그대로 냅둔다.
+//이 과정을 말단노드와 비교 할때까지 한다. 1번 실행하면 1번만 다운힙이 일어나도록 만들자.
+void delete_heap(void* base, size_t *nlen, size_t size_data, int compare(const void*, const void*))
+{
+	//배열의 nlen + 1에 있는 값을 일단 빼낸다.
+	void *temp_return;
+	void *temp;
+	int i = 1;
+	temp = malloc(size_data);
+	temp_return = malloc(size_data);
+	memcpy(temp, (char*)base + (*nlen) * size_data, size_data);
+	//*nlen--는 함수 밖에서 size가 감소가 안됨. *(nlen--)이것과 같나보다.
+	(*nlen)--;
+	memcpy(temp_return, (char*)base + 1 * size_data, size_data);
+	memcpy((char*)base + 1 * size_data, temp, size_data);
+	//이값을 i 가 넘으면 그만 다운힙해라
+	int boundary = *nlen / 2 + 1;
+
+	while (i < boundary)
+	{
+		if (compare((char*)base + (2 * i * size_data), (char*)base + (2 * i + 1) * size_data) >= 0)
+		{
+			if (compare(temp, (char*)base + (2 * i * size_data)) < 0)
+			{
+				memcpy((char*)base + i * size_data, (char*)base + (2 * i * size_data), size_data);
+				memcpy((char*)base + (2 * i * size_data), temp, size_data);
+				i = i * 2;
+			}
+			else
+			{
+				memcpy((char*)base + i * size_data, temp, size_data);
+				break;
+			}
+		}
+		else
+		{
+			if (compare(temp, (char*)base + (2 * i + 1) * size_data) < 0)
+			{
+				memcpy((char*)base + i * size_data, (char*)base + (2 * i + 1) * size_data, size_data);
+				memcpy((char*)base + (2 * i + 1) * size_data, temp, size_data);
+				i = i * 2 + 1;
+			}
+			else
+			{
+				memcpy((char*)base + i * size_data, temp, size_data);
+				break;
+			}
+		}
+	}
+	free(temp_return);
+	free(temp);
+}
+
+void insert_heap_add(void* new, void* base, size_t *nlen, size_t size_data, int compare(const void*, const void*))
+{
+	void *temp;
+	temp = malloc(size_data);
+	int i = ++(*nlen);
+	memcpy(((char*)base + i * size_data), (char*)new, size_data);
+	while (i > 1)
+	{
+
+		if (compare((char*)base + (i / 2) * size_data, (char*)base + i * size_data) <= 0)
+		{
+			memcpy(temp, (char*)base + i * size_data, size_data);
+			memcpy((char*)base + i * size_data, (char*)base + (i / 2) * size_data, size_data);
+			memcpy((char*)base + (i / 2) * size_data, temp, size_data);
+			i = i / 2;
+		}
+		else
+		{
+			break;
+		}
+	}
+	free(temp);
+}
+
+//nlen번째노드 (말단노드)에 대해 바로 위의 부모노드와 비교해서 부모노드보다 자식노드가 더 크면 
+//두 노드의 위치를 바꾼다.
+void up_head(void* base, size_t nlen, size_t size_data, int compare(const void*, const void*))
+{
+	int i = nlen;
+	void *temp;
+	temp = malloc(size_data);
+	if (compare((char*)base + (i / 2) * size_data, (char*)base + i * size_data) <= 0)
+	{
+		memcpy(temp, (char*)base + i * size_data, size_data);
+		memcpy((char*)base + i * size_data, (char*)base + (i / 2) * size_data, size_data);
+		memcpy((char*)base + (i / 2) * size_data, temp, size_data);
+	}
+	free(temp);
+}
+//node_position번째 노드와 자식 노드 둘중에 큰것과 비교해서 자식노드가 더 크면 자식노드와 위치를 바꿔준다. temp가 node_position에 있는
+//값을 담는 변수이다. 여기서 nlen은 index처럼 사용됨 -> 사이즈가 16이면 nlen은 15까지만 있어도됨
+void down_heap(void* base, size_t node_postion, size_t nlen, size_t size_data, int compare(const void*, const void*))
+{
+	void *temp;
+	temp = malloc(size_data);
+	memcpy(temp, (char*)base + node_postion * size_data, size_data);
+	//이값을 i 가 넘으면 그만 다운힙해라
+	int boundary = nlen / 2 + 1;
+
+	int i = node_postion;
+	while (i < boundary)
+	{
+		if (compare((char*)base + (2 * i * size_data), (char*)base + (2 * i + 1) * size_data) >= 0)
+		{
+			if (compare(temp, (char*)base + (2 * i * size_data)) < 0)
+			{
+				memcpy((char*)base + i * size_data, (char*)base + (2 * i * size_data), size_data);
+				memcpy((char*)base + (2 * i * size_data), temp, size_data);
+				i = i * 2;
+			}
+			else
+			{
+				memcpy((char*)base + i * size_data, temp, size_data);
+				break;
+			}
+		}
+		else
+		{
+			if (compare(temp, (char*)base + (2 * i + 1) * size_data) < 0)
+			{
+				memcpy((char*)base + i * size_data, (char*)base + (2 * i + 1) * size_data, size_data);
+				memcpy((char*)base + (2 * i + 1) * size_data, temp, size_data);
+				i = 2 * i + 1;
+			}
+			else
+			{
+				memcpy((char*)base + i * size_data, temp, size_data);
+				break;
+			}
+		}
+	}
+	free(temp);
+}
+
+//막 생성된 힙(이진트리)(=base)에 대해 말단 노드들을 뿌리까지 upheap을 하고 뿌리의 자식 노드들부터 말단 노드까지 downheap을 한다.
+void  heap_sort_bottom_up(void* base, size_t nlen, size_t size_data, int compare(const void*, const void*))
+{
+	if (nlen > 1)
+	{
+		//j는 다운힙을 하는 노드들 j/2 = i
+		//1. internal nodes -> i <= j < i/2 의 j에 대해 말단까지 다운힙
+		//2. j = i/2 가 되고 i = i/2 가 되어 i <=j < i/2 의 j에 대해 말단까지 다운힙
+		//3. j가 0이 되기 전까지 다운힙
+
+		int j = nlen / 2;
+		int i = j / 2;
+		while (1)
+		{
+			while (j > i)
+			{
+				down_heap(base, j, nlen, size_data, compare);
+				j--;
+			}
+			if (j == 0) break;
+			i = j / 2;
+		}
+	}
+}

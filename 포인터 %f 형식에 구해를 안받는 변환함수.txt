@@ -1,0 +1,38 @@
+int 형을 %f로 출력하면 오류생김;
+
+아래 함수는 아무 자료형의 변수에 담겨있는 값의 주소값을 함수의 인자로 사용을 할 때, 함수는 이미 void 형태의 변수를 가리키는 주소를 받도록 함수 인자에 설정
+되어 있기에, 아무 자료형의 변수에 담겨있는 값을 가리키는 주소를 함수의 인자로 사용해도, 호출된 자료형이 정해진 주소값은 이 함수 내에서 void 형태의 주소를 가리키는 것으로 변환되어 사용되어진다. 
+하지만 결국 원래 함수에서는 그 값이 각각의 아무 자료형으로 사용되기에 출력되는 결과에는 원래 자료형이 사용되어 출력된다.
+
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+
+//스왑하는 함수 -> call by referrence -> 들어오는 주소만 남기고 void로 형변환 여러 타입을처리하기위함
+//-> 담을 공간: 포인터 -> 공간의 크기가 참조되는 referrence의 width와 같아야함 : n -> 바꾸면 됨
+
+int swap(void *a, void *b, int n)
+{
+	void *t;
+	t = malloc(n);
+	memcpy(t, a, n);
+	memcpy(a, b, n);
+	memcpy(b, t, n);
+	free(t);
+}
+
+void main() 
+{	
+	int a = 10;
+	int b = 9;
+	float a1 = 6.6;
+	float b1 = 4.4;
+	char a2 = 'A';
+	char b2 = 'B';
+	swap(&a, &b, 4);
+	swap(&a1, &b1, 4);
+	swap(&a2, &b2, 1);
+
+	printf("%d : a , %d : b\n %f : a1 , %f : b1\n %c : a2 , %c : b2\n", a, b,a1,b1,a2,b2);
+	return 0;
+}	

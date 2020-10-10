@@ -1,0 +1,102 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 100
+
+//명함의 형태?
+typedef struct _card
+{
+	char schedule[SIZE];
+	int time;
+	struct _card *next;
+}card;
+
+card *head, *tail;
+
+void init_card()
+{
+	head = (card*)calloc(1, sizeof(card));
+	tail = (card*)calloc(1, sizeof(card));
+	head->next = tail;
+	tail->next = tail;
+}
+
+card *add_card(card *new_card)
+{
+	card *temp;
+	temp = head;
+
+	new_card->next = temp->next;
+	temp->next = new_card;
+	return new_card;
+}
+
+
+void main()
+{
+	init_card();
+	char buffer[SIZE];
+	int Time;
+	card *new_card;
+	card *delete_card;
+	//card *print_card = head->next;
+	//여기다 하면 그냥 tail로 저장되고 계속 안바뀜
+	while (1)
+	{
+		new_card = (card*)calloc(1, sizeof(card));
+
+		printf("input your time : ");
+		gets(buffer);
+		if (buffer[0] == '\0')
+		{
+			break;
+		}
+		Time = atoi(buffer);
+		new_card->time = Time;
+
+		printf("input your schedule : ");
+		gets(buffer);
+		strcpy(new_card->schedule, buffer);
+		add_card(new_card);
+	}
+
+	//print section
+
+	card *print_card = head->next;
+	int i = 1;
+	while (print_card != tail)
+	{
+		printf("%d번째 schedule : %s", i, print_card->schedule);
+		printf("\n");
+		printf("%d번째 time : %d", i, print_card->time);
+		printf("\n");
+		i++;
+		print_card = print_card->next;
+	}
+
+	print_card = head->next;
+	i = 1;
+	//delete section
+	while (print_card != tail)
+	{
+		delete_card = print_card;
+		print_card = print_card->next;
+		free(delete_card);
+	}
+
+	head->next = tail;
+
+	while (print_card != tail)
+	{
+		printf("\n삭제 후");
+
+		printf("%d번째 schedule : %s", i, print_card->schedule);
+		printf("\n");
+		printf("%d번째 time : %s", i, print_card->time);
+		printf("\n");
+
+		i++;
+		print_card = print_card->next;
+	}
+}

@@ -1,0 +1,49 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 100
+
+int stack[SIZE];
+int top = 0;
+//a를 스택의 top위치에 넣는다.
+void push(int a)
+{
+	stack[top++] = a;
+}
+//top위치에 있는 자료를 빼낸다.
+int pop()
+{
+	return stack[--top];
+}
+
+void print_stack()
+{
+	printf("현재 스택은 ");
+
+	while (1)
+	{
+
+		//pop후에 맨 마지막꺼 까지 빼면 top은 여기서 0임
+		if (top <= 0)
+		{
+			break;
+		}
+		printf("%d ", pop());
+	}
+}
+
+void main()
+{
+	char buffer[SIZE];
+	int value;
+	while (1)
+	{
+		gets(buffer);
+		if (buffer[0] == '\0') break;
+		value = atoi(buffer);
+		push(value);
+	}
+	
+	print_stack();
+}

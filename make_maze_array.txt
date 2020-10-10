@@ -1,0 +1,24 @@
+#define SIZE 5
+
+void make_maze(int a[][SIZE], int N)
+{
+	for (int y = 0; y < SIZE; y++)
+	{
+		for (int x = 0; x < SIZE; x++)
+		{
+			if (y == x)
+			{
+				a[y][x] = 1;
+			}
+		}
+	}
+
+	for (int y = 0; y < SIZE; y++)
+	{
+		for (int x = 0; x < SIZE; x++)
+		{
+			printf("%d ", a[y][x]);
+		}
+		printf("\n");
+	}
+}

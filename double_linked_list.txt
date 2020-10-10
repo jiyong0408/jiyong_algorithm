@@ -1,0 +1,198 @@
+#include <stdio.h>
+#pragma warning(disable:4996)
+#include <stdlib.h>
+
+typedef struct _dnode {
+	int key;
+	struct _dnode *prev;
+	struct _dnode *next;
+}dnode;
+
+dnode *head, *tail;
+//더블노드형 타입의 데이터를 가리키는 헤드와 테일을 선언한다.
+
+void init_list()
+{
+	head = (dnode*)calloc(1, sizeof(dnode));
+	tail = (dnode*)calloc(1, sizeof(dnode));
+	head->prev = head;
+	tail->next = tail;
+	head->next = tail;
+	tail->prev = head;
+}
+
+//인자로 사용된 노드 앞에 key값을 가지는 노드를 삽입해라.
+dnode *insert_dnode(int key, dnode *Dnode)
+{
+	if (Dnode == head) return NULL;
+	else
+	{
+		dnode *temp_add;
+		temp_add = (dnode*)calloc(1, sizeof(dnode));
+		temp_add->key = key;
+
+		temp_add->next = Dnode;
+		temp_add->prev = Dnode->prev;
+		Dnode->prev->next = temp_add;
+		Dnode->prev = temp_add;
+		return temp_add;
+	}
+}
+
+void delete_given_dnode(dnode *Dnode)
+{
+	if (Dnode == tail || Dnode == head)
+	{
+		return NULL;
+	}
+	else
+	{
+		Dnode->prev->next = Dnode->next;
+		Dnode->next->prev = Dnode->prev;
+		free(Dnode);
+	}
+}
+
+dnode *find_key(int key)
+{
+	dnode *temp_find;
+	temp_find = head->next;
+
+	while (temp_find != tail && temp_find->key != key)
+	{
+		temp_find = temp_find->next;
+	}
+	if (temp_find == tail)
+	{
+		return 0;
+	}
+	else
+	{
+		return temp_find;
+	}
+}
+
+//어떤 값을 가지는 노드를 제거
+void delete_dnode(int key)
+{
+	dnode *temp_delete;
+	temp_delete = head->next;
+
+	while (temp_delete != tail && temp_delete->key != key)
+	{
+		temp_delete= temp_delete->next;
+	}
+
+	//temp_delete = find_key(key);
+
+	if (temp_delete != tail)
+	{
+		temp_delete->prev->next = temp_delete->next;
+		temp_delete->next->prev = temp_delete->prev;
+		free(temp_delete);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+//key앞에 before을 넣어라.
+dnode *insert_key_before(int key,int before)
+{
+	dnode *temp_add, *temp_find;
+	temp_add = (dnode*)calloc(1, sizeof(dnode));
+	temp_add->key = before;
+	temp_find = find_key(key);
+	
+	if (temp_find != 0)
+	{
+		temp_add->next = temp_find;
+		temp_add->prev = temp_find->prev;
+		temp_find->prev->next = temp_add;
+		temp_find->prev = temp_add;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+dnode *ordered_insert(int key)
+{
+	dnode *temp_add, *temp_find;
+	temp_add = (dnode*)calloc(1, sizeof(dnode));
+	temp_add->key = key;
+	temp_find = head->next;
+	//오름 1,2,3,4,5...
+	while (temp_find->key <= key && temp_find != tail)
+	{
+		temp_find = temp_find->next;
+	}
+
+
+	//내림 5,4,3,2,1...
+	//while (temp_find->key >= key && temp_find != tail)
+	//{
+	//	temp_find = temp_find->next;
+	//}
+
+	temp_add->next = temp_find;
+	temp_add->prev = temp_find->prev;
+	temp_find->prev->next = temp_add;
+	temp_find->prev = temp_add;
+	return temp_add;
+}
+
+void delete_all()
+{
+	dnode *temp_find;
+	temp_find = head->next;
+	dnode *temp_delete;
+
+	while (temp_find != tail)
+	{
+		temp_delete = temp_find;
+		temp_find = temp_find->next;
+		free(temp_delete);
+	}
+
+	head->next = tail;
+	tail->prev = head;
+}
+
+void print_list()
+{
+	dnode *temp_print;
+	temp_print = head->next;
+	while (temp_print != tail)
+	{
+		printf("%d ", temp_print->key);
+		temp_print = temp_print->next;
+	}
+}
+
+void main()
+{
+	init_list();
+	ordered_insert(9);
+	ordered_insert(3);
+	ordered_insert(5);
+	ordered_insert(1);
+	ordered_insert(7);
+	
+	print_list();
+
+	printf("\n");
+	printf("5가 있는 주소는 : %8d ", find_key(5));
+	insert_key_before(5,4);
+	printf("\n");
+	print_list();
+	insert_dnode(2, find_key(9));
+	printf("\n");
+	print_list();
+	delete_dnode(4);
+	printf("\n");
+	print_list();
+
+	return 0;
+}

@@ -1,0 +1,177 @@
+comp함수를 정렬하고자하는 데이터 타입에 맞게 바꿔줘야 퀵정렬이
+올바르게 작동한다.
+
+
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define SIZE 9
+#define width 1
+
+int stack1[SIZE] = { 0, };
+int stack2[SIZE] = { 0, };
+int stack_for_push_pop[SIZE] = { 0, };
+char stack[SIZE] = { 'c', 'd', 'e', 'a', 'b', 'e', 'g', 't','f'};
+int top = -1;
+
+int comp_int(const void *a, const void *b);
+int comp_char(const void *a, const void *b);
+void make_random_array(int stack[SIZE]);
+void print_array(char array[SIZE]);
+int sorting_check(int array[SIZE]);
+void init_stack();
+void push(int key);
+int pop();
+void random_quick_sort_non_recursive_and_insertion_sort(void *array, int N, int size_data, int comp(const void *, const void *));
+
+
+void main()
+{
+	init_stack();
+	//srand(time(NULL));
+	//make_random_array(&stack2);
+	printf("정렬전 : ");
+	print_array(&stack);
+	printf("\n");
+	random_quick_sort_non_recursive_and_insertion_sort(&stack, SIZE, width, comp_char);
+	printf("정렬후 : "); 
+	print_array(&stack);
+	printf("\n");
+
+}
+
+int comp_char(const void *a,const void *b)
+{
+	//양수면 a가 더 크다.
+	return *(char*)a - *(char*)b;
+}
+
+int comp_int(const void *a, const void *b)
+{
+	//양수면 a가 더 크다.
+	return *(int*)a - *(int*)b;
+}
+
+void random_quick_sort_non_recursive_and_insertion_sort(void *array, int N, int size_data, int comp(const void *, const void *))
+{
+	//i = Left , j = Right
+	void* temp;
+	temp = malloc(size_data);
+	push(0);
+	push(N - 1);
+
+	while (1)
+	{
+		if (top < 0) break;
+		int R = pop();
+		int L = pop();
+		if (R - L + 1 > 1)
+		{
+			int random = (rand() % (R - L + 1)) + L;
+			void *pivot;
+			pivot = malloc(size_data);
+			memcpy(pivot, (char*)array + random * size_data, size_data);
+			memcpy((char*)array + random * size_data, (char*)array + R * size_data, size_data);
+			memcpy((char*)array + R * size_data, pivot, size_data);
+			
+			int i = L;
+			int j = R - 1;
+
+
+			while (1)
+			{
+				if (comp((char*)array + i * size_data, pivot) < 0) i++;
+				if (comp((char*)array + j * size_data, pivot) > 0) j--;
+
+				if (i > j)
+				{
+					memcpy(((char*)array + R * size_data), ((char*)array + i * size_data), size_data);
+
+					memcpy(((char*)array + i * size_data), pivot, size_data);
+
+					push(L);
+					push(i - 1);
+
+					push(i + 1);
+					push(R);
+					break;
+				}
+
+				if(comp((char*)array+ i * size_data , pivot) >= 0 && comp((char*)array + j * size_data , pivot) <= 0)
+				{
+					memcpy(temp, (char*)array + i * size_data, size_data);
+					memcpy((char*)array + i * size_data, (char*)array + j * size_data, size_data);
+					memcpy((char*)array + j * size_data, temp , size_data);
+					i++;
+					j--;
+				}
+			}
+			free(pivot);
+		}
+	}
+	free(temp);
+}
+
+void init_stack()
+{
+	top = -1;
+}
+
+void push(int key)
+{
+	stack_for_push_pop[++top] = key;
+}
+
+int pop()
+{
+	return stack_for_push_pop[top--];
+}
+
+
+void make_random_array(int stack[SIZE])
+{
+	int done = 1;
+	int i = 0;
+	while (done)
+	{
+		if (i == SIZE) done = 0;
+		else
+		{
+			int j = 0;
+			int number = (rand() % SIZE) + 1;
+			int same_check = 0;
+
+			for (j; j <= i; j++)
+			{
+				if (stack[j] == number) same_check = 1;
+			}
+			if (same_check == 0)
+			{
+				stack[i] = number;
+				i++;
+			}
+		}
+	}
+}
+
+void print_array(char array[SIZE])
+{
+	for (int i = 0; i < SIZE; i++)
+	{
+		printf("%c ", array[i]);
+	}
+}
+
+//정렬이 끝났는지 체크해준다.
+int sorting_check(int array[SIZE])
+{
+	int check = 0;
+	for (int i = 0; i < SIZE; i++)
+	{
+		//순서에 어긋난게 발견됬다 -> check = 1
+		if (array[i] < array[i + 1]) check = 1;
+	}
+	if (check == 1) return 0;
+	else return 1;
+}

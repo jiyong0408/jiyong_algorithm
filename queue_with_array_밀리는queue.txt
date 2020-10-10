@@ -1,0 +1,96 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#define SIZE 100
+
+int queue[SIZE] = { 0, };
+int rear, front;
+
+void init_queue()
+{
+	rear = -1;
+	front = -1;
+}
+
+//queue의 front가 가리키는 주소의 key값을 반환한다.
+int get()
+{
+	int key = 0;
+	if (front == rear)
+	{
+		printf("the queue is empty");
+		return NULL;
+	}
+	key = queue[++front];
+	queue[front] = 0;
+	return key;
+}
+
+//queue의 rear가 가키리는 주소와 tail이 가리키는 주소 사이에 key값을 갖는 데이터를 삽입한다.
+int* put(int key)
+{
+	if (front > SIZE - 1)
+	{
+		printf("the queue is already full");
+		return NULL;
+	}
+	queue[++rear] = key;
+}
+
+void print_queue()
+{
+	int i = front + 1;
+	if (rear == front) printf("the queue is empty");
+	while (1)
+	{
+		if (i > rear)
+		{
+			break;
+		}
+		else
+		{
+			printf("%d ", queue[i]);
+			i++;
+		}
+	}
+}
+
+void delete_queue()
+{
+	if (rear == front)
+	{
+		printf("the queue is empty");
+		return NULL;
+	}
+	int i = front;
+	while (1)
+	{
+		queue[++i] = 0;
+		if (i > rear) break;
+	}
+	rear = -1;
+	front = -1;
+}
+
+void main()
+{
+	init_queue();
+	char buffer[100];
+	int key;
+	while (1)
+	{
+		gets(buffer);
+		if (buffer[0] == '\0') break;
+		key = atoi(buffer);
+		put(key);
+	}
+	print_queue();
+	printf("\n");
+	get();
+	get();
+	printf("\n");
+	print_queue();
+	printf("\n");
+	delete_queue();
+	printf("\n");
+	print_queue();
+}

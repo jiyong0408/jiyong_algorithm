@@ -1,0 +1,14 @@
+
+void maze_multiple(int *a, int *b, int *multiple_maze, int N)
+{
+	for (int y = 0; y < N; y++)
+	{
+		for (int x = 0; x < N; x++)
+		{
+			for (int k = 0; k < N; k++)
+			{
+				*(multiple_maze + y * N + x) += *(a + y * N + k) * (*(b + k * N + x));
+			}
+		}
+	}
+}

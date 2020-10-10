@@ -1,0 +1,190 @@
+#include <stdio.h>
+#pragma warning(disable:4996)
+#include <stdlib.h>
+
+typedef struct _node {
+	int key;
+	struct _node *next;
+}node;
+
+node *head, *tail;
+//노드형 타입의 데이터를 가리키는 헤드와 테일을 선언한다.
+
+void init_list()
+{
+	head = (node*)calloc(1, sizeof(node));
+	//헤드라는 포인터에 노드 구조체 사이즈의 메모리를 한칸 할당한다
+	tail = (node*)calloc(1, sizeof(node));
+	head->key = 0;
+	tail->key = 0;
+	head->next = tail;
+	//헤드가 가리키는 공간에 있는 포인터 next에 tail 포인터를 가리키는 주소를 대입한다.
+	tail->next = tail;
+	//디버깅을 위해
+}
+
+node *insert_after(int N, node *list)
+{
+	node *temp;
+	temp = (node*)calloc(1, sizeof(node));
+	temp->next = list->next;
+
+	list->next = temp;
+	//node형 주소를 닮는 공간에 temp가 가리키는 주소값을 넣는다.
+	temp->key = N;
+
+	return temp;
+	//왜 반환하지? 이미 생선된거 아닌가.
+	// 새로 생성된 노드의 주소를 가리키는 값을 반환.
+}
+
+node *delete(node *N)
+{
+	node *temp;
+	temp = (node*)calloc(1, sizeof(node));
+	temp = N->next;
+	N->next = N->next->next;
+	free(temp);
+}
+
+node *find(int k)
+{
+	node *temp;
+	temp = (node*)calloc(1, sizeof(node));
+	temp->next = head;
+	while ((temp->key != k) && (temp != tail))
+	{
+		temp = temp->next;
+	}
+	return temp;
+}
+
+int find_delete(int k)
+{
+	node *temp_delete;
+	node *temp_connect;
+	
+	temp_delete = head->next;
+	temp_connect = head;
+	
+	while ((temp_delete->key != k) && (temp_delete != tail))
+	{
+		temp_connect = temp_delete;
+		temp_delete = temp_delete->next;
+		//next는 node형 포인터 !!
+	}
+	temp_connect->next = temp_connect->next->next;
+	//만약 k가 없다면?
+	if (temp_delete != tail)
+	{
+		free(temp_delete);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+node *insert_node(int before, int value)
+{
+	node *temp_find;
+	node *temp_add;
+	node *temp_before;
+	temp_add = (node*)calloc(1, sizeof(node));
+
+	temp_find = head->next;
+	temp_before = head;
+
+	while ((temp_find != tail) && (temp_find->key != before))
+	{
+		temp_before = temp_find;
+		temp_find = temp_find->next;
+	}
+	
+	if(temp_find != tail)
+	{
+		temp_add->next = temp_before->next;
+		temp_before->next = temp_add;
+		temp_add->key = value;
+		return temp_add;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+node *ordered_insert(int value)
+{
+	node *temp_add;
+	node *temp_find;
+	node *temp_connect;
+
+	temp_find = head->next;
+	temp_connect = head;
+	temp_add = (node*)calloc(1, sizeof(node));
+	temp_add->key = value;
+
+	while ((temp_find->key <= temp_add->key) && (temp_find != tail))
+	{
+		temp_connect = temp_find;
+		temp_find = temp_find->next;
+	}
+
+	temp_add->next = temp_connect->next;
+	temp_connect->next = temp_add;
+	return temp_add;
+}
+
+node *delete_all()
+{
+	node *temp_delete;
+	node *temp_next;
+	temp_next = head->next;
+
+	while (temp_next != tail)
+	{
+		temp_delete = temp_next;
+		temp_next = temp_next->next;
+		free(temp_delete);
+	}
+
+	head->next = tail;
+	return head;
+}
+
+void print_list(node *t)
+{
+	while (t != tail)
+	{
+		printf("%d ", t->key);
+		t = t->next;
+	}
+	printf("%d ", t->key);
+}
+
+void main()
+{
+	init_list();
+	
+	ordered_insert(9);
+	ordered_insert(3);
+	ordered_insert(5);
+	ordered_insert(1);
+	ordered_insert(7);
+	print_list(head);
+
+	printf(" 5의 위치 : %8d ", find(5));
+	insert_node(5,6);
+	print_list(head);
+
+	find_delete(5);
+	print_list(head);
+
+	delete_all();
+	
+	printf("삭제 후 ");
+	print_list(head);
+	
+	return 0;
+}

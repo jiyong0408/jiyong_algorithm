@@ -1,0 +1,132 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define SIZE 100
+int top = -1;
+//출력을 하는 스택
+char stack[SIZE];
+
+int j = 0;
+int i = 0;
+
+char pop()
+{
+	if (top < 0)
+	{
+		printf("empty\n");
+	}
+	return stack[top--];
+}
+
+void push(char key)
+{
+	if (top > SIZE - 1)
+	{
+		printf("full");
+	}
+	stack[++top] = key;
+}
+
+int Is_operator(char buffer)
+{
+	if (buffer == '*' || buffer == '/' || buffer == '+' || buffer == '-' || buffer == '(') return 1;
+	else return 0;
+}
+
+//스택에 새로운 연산자가 들어오면 비교해서 새로운 연산자가 우선순위가 높으면 p_b로 옮김 그 이외는 가만히 스택에 push
+int operator_magnitude(char operator)
+{
+	switch (operator)
+	{
+	case '*':
+		return 2;
+		break;
+	case '/':
+		return 2;
+		break;
+	case '+':
+		return 1;
+		break;
+	case '-':
+		return 1;
+		break;
+	default:
+		return 0;
+		break;
+	}
+}
+
+void postfix(char buffer[SIZE], char print[SIZE])
+{
+	while (buffer[i])
+	{
+		if (buffer[i] != ')')
+		{
+			if (Is_operator(buffer[i]))
+			{
+				if (buffer[i] == '(')
+				{
+					push(buffer[i]);
+					i++;
+				}
+				//기존의 스택과 비교해서 우선순위가 스택에 있는 연산자가 더 높으면 p_b로 옮겨준다.
+				else if (top >= 0 && (operator_magnitude(buffer[i]) < operator_magnitude(stack[top])))
+				{
+					print[j] = pop();
+					j++;
+					push(buffer[i]);
+					i++;
+				}
+				else
+				{
+					push(buffer[i]);
+					i++;
+				}
+			}
+			else
+			{
+				print[j] = buffer[i];
+				i++;
+				j++;
+			}
+		}
+
+		else if (buffer[i] == ')')
+		{
+			while (stack[top] != '(')
+			{
+				print[j] = pop();
+				j++;
+			}
+			pop();
+			i++;
+		}
+	}
+	while (top >= 0)
+	{
+		print[j] = pop();
+		j++;
+	}
+}
+
+void main()
+{
+	char buffer[SIZE] = { 0, };
+	char print_buffer[SIZE] = { 0, };
+	gets(buffer);
+
+	postfix(&buffer, &print_buffer);
+
+	int i = 0;
+	while (1)
+	{
+		if (print_buffer[i])
+		{
+			printf("%c ", print_buffer[i]);
+			i++;
+		}
+		else break;
+	}
+}
