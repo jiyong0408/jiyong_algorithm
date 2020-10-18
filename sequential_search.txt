@@ -1,0 +1,120 @@
+//sequential_search
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 100
+#define size_data 1
+
+int compare(const void *a, const void *b);
+int sequential_search(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b));
+void sequential_search_first(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b));
+void insert_search(void *str, void *ch, size_t *nlen, size_t size);
+void delete_search(void *str, void *ch, size_t *nlen, size_t size);
+
+
+void main()
+{
+	printf("sequential searching\n");
+	void *str;
+	void *temp;
+	size_t nlen;
+	temp = malloc(size_data);
+	str = (void*)calloc(SIZE, size_data);
+
+	while (1)
+	{
+		printf("enter anything\n");
+		printf("-1 : end\n");
+		scanf("%s", str);
+		getchar();
+		if (!strcmp((char*)str, "-1")) break;
+		nlen = strlen((char*)str);
+		printf("find ? : ");
+		scanf("%c", temp);
+		getchar();
+		sequential_search_first(str, temp, nlen, size_data, compare);
+		printf("%s\n", str);
+		printf("insert ? : ");
+		scanf("%c", temp);
+		getchar();
+		insert_search(str, temp, &nlen, size_data);
+		printf("%s\n", str);
+		printf("delete ? : ");
+		scanf("%c", temp);
+		getchar();
+		delete_search(str, temp, &nlen, size_data);
+		printf("%s\n", str);
+	}
+	free(temp);
+	free(str);
+}
+
+int sequential_search(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b))
+{
+	int i = 0;
+	while (memcmp((char*)str + i * size, ch, size) && i < nlen - 1) i++;
+	if (i > nlen - 1)
+	{
+		printf("찾는것이 없습니다.\n");
+		return 0;
+	}
+	else
+	{
+		printf("%d에 있습니다.\n", i);
+		return i;
+	}
+}
+//방금 검색한걸 배열의 맨앞자리로 보내고 그리고 나머지는 한칸씩 밀림
+void sequential_search_first(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b))
+{
+	int i = 0;
+	void *temp;
+	temp = malloc(size);
+	if (i = sequential_search(str, ch, nlen, size, compare))
+	{
+		memcpy(temp, (char*)str + i * size, size);
+		while (1)
+		{
+			i--;
+			if (i < 0) break;
+			memcpy((char*)str + (i + 1)*size, (char*)str + i * size, size);
+		}
+		memcpy((char*)str, temp, size);
+	}
+	free(temp);
+}
+
+//0보다 크면 a가 크다
+int compare(const void *a, const void *b)
+{
+	return *(int*)a - *(int*)b;
+}
+
+void insert_search(void *str, void *ch, size_t *nlen, size_t size)
+{
+	if (*nlen < SIZE - 1) memcpy((char*)str + (*nlen)++ * size, ch, size);
+	else printf("꽉 찼습니다.\n");
+}
+
+void delete_search(void *str, void *ch, size_t *nlen, size_t size)
+{
+	int i = 0;
+	while (memcmp((char*)str + i * size, ch, size) && i < (*nlen - 1)) i++;
+	if (i > (*nlen - 1)) printf("지우고자 하는게 없어요. \n");
+	else
+	{
+		while (1)
+		{
+			if (i == *nlen - 1)
+			{
+				memcpy((char*)str + i * size, "\0", size);
+				--*nlen;
+				break;
+			}
+			memcpy((char*)str + i * size, (char*)str + (i + 1) * size, size);
+			i++;
+		}
+	}
+}
+

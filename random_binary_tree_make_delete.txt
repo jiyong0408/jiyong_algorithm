@@ -1,0 +1,498 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define SIZE 26
+
+typedef struct _node {
+	int number;
+	char key;
+	struct _node *left;
+	struct _node *right;
+}node;
+
+//정렬된 순서이며 나중에 delete함수로 삭제할때 이용할 스택이다.
+node *stack_delete_ordered[SIZE];
+node *stack[SIZE];
+node *stack_visit[SIZE];
+int top = -1;
+
+void delete_node(node *t, char key, size_t *leaves, int compare(const void *a, const void *b));
+void delete_node_has_no_child(node *parent_delete_node, node* delete_node, size_t *N);
+void delete_node_only_has_right_child_right(node *parent_delete_node, node* delete_node, size_t *N);
+void delete_node_only_has_left_child_right(node *parent_delete_node, node* delete_node, size_t *N);
+void delete_node_only_has_right_child_left(node *parent_delete_node, node* delete_node, size_t *N);
+void delete_node_only_has_left_child_left(node *parent_delete_node, node* delete_node, size_t *N);
+node *binary_tree_search(node *t, char key, int compare(const void *a, const void *b));
+int index = 1;
+int visit_check(node *t, size_t *n);
+void visit(node *t, size_t n);
+node* pop();
+void push(node* t);
+node *head, *tail;
+void init_node();
+int compare_char(const void* a, const void *b);
+node* insert_key_tree(char key, size_t *leaves, int comp(const void *a, const void *b));
+void random_char_insert(size_t N, size_t *leaves, int comp(const void *a, const void *b));
+void print_inordered_search(node *t, size_t *N);
+void delete_nodes(size_t N);
+
+void main()
+{
+	srand(time(NULL));
+	//nodes
+	char key = 0;
+	int i = 0;
+	//노드 개수
+	size_t num = 0;
+	init_node();
+
+	random_char_insert(SIZE,&num,compare_char);
+	
+	print_inordered_search(head->left, &num);
+	printf("\n");
+	while (1)
+	{
+		printf("A - Z 중 찾고싶은 문자를 입력하시오.\n");
+		printf("x를 입력하면 종료.\n");
+
+		scanf("%c", &key);
+		getchar();
+		if (key == 'x') break;
+		if(binary_tree_search(head->left, key, compare_char) != NULL) printf("%d번째 노드에 있습니다.\n", binary_tree_search(head->left, key, compare_char)->number);
+	}
+	
+	while (1)
+	{
+		printf("A - Z 중 지우고 싶은 문자를 입력하시오.\n");
+		printf("x를 입력하면 종료.\n");
+
+		scanf("%c", &key);
+		getchar();
+		if (key == 'x') break;
+		delete_node(head->left, key, &num, compare_char);
+		print_inordered_search(head->left, &num);
+	}
+	
+	delete_nodes(num);
+	free(head);
+	free(tail);
+}
+
+
+int compare_char(const void* a, const void *b)
+{
+	return *(char*)a - *(char*)b;
+}
+
+void init_node()
+{
+	head = (node*)calloc(1, sizeof(node));
+	tail = (node*)calloc(1, sizeof(node));
+	tail->left = NULL;
+	tail->right = NULL;
+	head->left = tail;
+	head->right = tail;
+}
+//왼쪽은 작고 가운데는 중간값 오른쪽은 큰거 계속 생성하도록 
+node* insert_key_tree(char key, size_t *leaves, int comp(const void *a, const void *b))
+{
+	node *temp;
+	//이번 노드를 어디에 넣을지 봐주는 포인터
+	temp = (node*)calloc(1, sizeof(node));
+	node *temp_search = temp;
+	temp->key = key;
+	if (*leaves == 0)
+	{
+		head->left = temp;
+		head->right = temp;
+		temp->left = tail;
+		temp->right = tail;
+		temp->number = index++;
+		++*leaves;
+		return temp;
+	}
+	else
+	{
+		temp_search = head->left;
+		while (1)
+		{
+			if (temp_search == tail) break;
+			if (comp(&(temp_search->key), &key) > 0)
+			{
+				if (temp_search->left == tail)
+				{
+					temp_search->left = temp;
+					temp->left = tail;
+					temp->right = tail;
+					temp->number = index++;
+					++*leaves;
+					return temp;
+				}
+				else temp_search = temp_search->left;
+			}
+			else if (comp(&(temp_search->key), &key) < 0)
+			{
+				if (temp_search->right == tail)
+				{
+					temp_search->right = temp;
+					temp->left = tail;
+					temp->right = tail;
+					temp->number = index++;
+					++*leaves;
+					return temp;
+				}
+				else temp_search = temp_search->right;
+			}
+			//중복된게 들어왔다면
+			else
+			{
+				free(temp);
+				return NULL;
+			}
+		}
+	}
+}
+
+void random_char_insert(size_t N, size_t *leaves, int comp(const void *a, const void *b))
+{
+	//65~90
+	int random = 0, i = 0;
+	while (1)
+	{
+		if (i == N) break;
+		random = rand() % 26 + 65;
+		if(insert_key_tree(random, leaves, comp) != NULL) i++;
+	}
+}
+
+node* pop()
+{
+	if(top > -1) return stack[top--];
+	else return NULL;
+}
+
+void push(node* t)
+{
+	if (top < SIZE) stack[++top] = t;
+}
+
+//head->left or right를 넣고 왼 가 오 순으로 출력
+void print_inordered_search(node *t, size_t *N)
+{
+	for (int i = 0; i < *N; i++)
+	{
+		stack_visit[i] = NULL;
+	}
+	for (int i = 0; i < *N; i++)
+	{
+		stack_delete_ordered[i] = NULL;
+	}
+	int i = 0;
+	if (head->left != tail)
+	{
+		while (1)
+		{
+			if (t->left != tail && visit_check(t->left, N))
+			{
+				push(t);
+				t = t->left;
+			}
+			else if ((t->left == tail || !visit_check(t->left, N)) && t->right != tail)
+			{
+				visit(t, i);
+				stack_visit[i++] = t;
+				t = t->right;
+			}
+			else
+			{
+				visit(t, i);
+				stack_visit[i++] = t;
+				if (top < 0) break;
+				t = pop();
+			}
+		}
+		printf("\n");
+	}
+	else printf("트리가 비었습니다. \n");
+}
+
+void visit(node *t, size_t n)
+{
+	stack_delete_ordered[n] = t;
+	printf("%d 번째 노드 : %c \n",t->number, t->key);
+	printf("삭제시킬노드 순서 %d번째 : %c \n", n, stack_delete_ordered[n]->key);
+}
+//방문 했던 노드면 0을 리턴 방문 안했다면 가야하니까 1을 리턴
+int visit_check(node *t, size_t *n)
+{
+	int i = 0;
+	for (i; i < *n; i++)
+	{
+		if (t == stack_visit[i])
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+void delete_nodes(size_t N)
+{
+	for (int i = 0; i < N; i++) free(stack_delete_ordered[i]);
+}
+//t 는 루트부터 head->left or right
+node *binary_tree_search(node *t,char key, int compare(const void *a, const void *b))
+{
+	node *search = t;
+	while (1)
+	{
+		if (search == tail)	
+		{
+			printf("찾는게 없습니다.\n");
+			return NULL;
+		}
+		else if (compare(&search->key, &key) > 0) search = search->left;
+		else if (compare(&search->key, &key) < 0) search = search->right;
+		else 
+		{
+			if(search != tail) return search;
+		}
+	}
+}
+//t 는 루트부터 head->left or right
+void delete_node(node *t, char key, size_t *leaves, int compare(const void *a, const void *b))
+{
+	node *search = t;
+	node *search_before = t;
+	while (1)
+	{
+		if (search == tail)
+		{
+			printf("잘못입력하셨습니다.\n");
+			break;
+		}
+		else if (compare(&search->key, &key) > 0)
+		{
+			search_before = search;
+			search = search->left;
+		}
+		else if (compare(&search->key, &key) < 0)
+		{
+			search_before = search;
+			search = search->right;
+		}
+		//지우고 싶은 같은걸 찾았다.
+		//1.트리구조바꾸고
+		//2.delete_ordered 스택땡기고
+		else
+		{
+			//루트보다 큰것중에 제일 작은 것을 루트로 올려준다.
+			//지우고자하는게 루트라면
+			if (head->left == search)
+			{
+				node *temp = search->right;
+				node *temp_right = NULL;
+				node *temp_before = search;
+				if (temp != tail)
+				{
+					//우측 트리중에 최소값찾는 while문
+					while (1)
+					{
+						if (temp->left != tail)
+						{
+							temp_before = temp;
+							temp = temp->left;
+						}
+						else break;
+					}
+					//위 서칭에 의해 left가 있을수가없다.
+					if (temp->right != tail)
+					{
+						temp_right = temp->right;
+						if (search->left != tail) temp->left = search->left;
+						if (search->right != tail && search->right != temp)
+						{
+							temp->right = search->right;
+							temp_before->left = temp_right;
+						}
+						head->left = temp;
+						head->right = temp;
+						(*leaves)--;
+						free(search);
+						break;
+					}
+					else if (temp->right == tail)
+					{
+						if (search->left != tail) temp->left = search->left;
+						if (search->right != tail && search->right != temp)
+						{
+							temp->right = search->right;
+							temp_before->left = tail;
+						}
+						head->left = temp;
+						head->right = temp;
+						(*leaves)--;
+						free(search);
+						break;
+					}
+				}
+				else
+				{
+					head->left = search->left;
+					head->right = search->left;
+					(*leaves)--;
+					free(search);
+					break;
+				}
+			}
+			//search_before의 left에 삭제하고자하는 노드 search가 있을때
+			if (search_before->left == search)
+			{
+				//말단노드일때
+				if (search->left == tail && search->right == tail)
+				{
+					delete_node_has_no_child(search_before, search, leaves);
+					break;
+				}
+				//제거하고자하는 노드 왼쪽에 자식이 있을때
+				else if (search->left != tail && search->right == tail)
+				{
+					delete_node_only_has_left_child_left(search_before, search, leaves);
+					break;
+				}
+				//제거하고자하는 노드 오른쪽에 자식이있다면
+				else if (search->right != tail)
+				{
+					//temp_search현재 지우고자하는 노드의 주소 그뒤론 당기고자하는 노드의 주소
+					node *temp_search = search;
+					node *temp_search_before = search_before;
+					node *temp_left1 = search->left;
+					node *temp_left2 = NULL;
+					if (search->left != tail)
+					{
+						temp_search = search->right;
+						while (1)
+						{
+							if (temp_search->left != tail) temp_left2 = temp_search->left;
+
+							temp_search->left = temp_left1;
+							if (temp_search->right == tail)
+							{
+								if (temp_left2 != NULL) temp_search->right = temp_left2;
+								break;
+							}
+							else if (temp_left2 != NULL && temp_search->right != tail)
+							{
+								temp_left1 = temp_left2;
+								temp_search = temp_search->right;
+								temp_left2 = NULL;
+							}
+						}
+						temp_search_before->left = search->right;
+						(*leaves)--;
+						free(search);
+						break;
+					}
+					else
+					{
+						delete_node_only_has_right_child_left(temp_search_before, temp_search, leaves);
+						break;
+					}
+				}
+			}
+			
+			else
+			{
+				//말단노드일때
+				if (search->left == tail && search->right == tail)
+				{
+					delete_node_has_no_child(search_before, search, leaves);
+					break;
+				}
+				//제거하고자하는 노드 왼쪽에 자식이 있을때
+				else if (search->left != tail && search->right == tail)
+				{
+					delete_node_only_has_left_child_right(search_before, search, leaves);
+					break;
+				}
+				//제거하고자하는 노드 오른쪽에 자식이있다면
+				else if (search->right != tail)
+				{
+					//temp_search현재 지우고자하는 노드의 주소 그뒤론 당기고자하는 노드의 주소
+					node *temp_search = search;
+					node *temp_search_before = search_before;
+					node *temp_left1 = search->left;
+					node *temp_left2 = NULL;
+					if (search->left != tail)
+					{
+						temp_search = search->right;
+						while (1)
+						{
+							if (temp_search->left != tail) temp_left2 = temp_search->left;
+
+							temp_search->left = temp_left1;
+							if (temp_search->right == tail)
+							{
+								if (temp_left2 != NULL) temp_search->right = temp_left2;
+								break;
+							}
+							else if (temp_left2 != NULL && temp_search->right != tail)
+							{
+								temp_left1 = temp_left2;
+								temp_search = temp_search->right;
+								temp_left2 = NULL;
+							}
+						}
+						temp_search_before->right = search->right;
+						(*leaves)--;
+						free(search);
+						break;
+					}
+					else
+					{
+						delete_node_only_has_right_child_right(temp_search_before, temp_search, leaves);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+//노드하나를 지운뒤 그 노드의 부모와 지운 노드의 왼쪽 자식과 연결
+//지우는 노드에게 왼쪽  자식만 있을때
+void delete_node_only_has_left_child_left(node *parent_delete_node, node* delete_node, size_t *N)
+{
+	parent_delete_node->left = delete_node->left;
+	(*N)--;
+	free(delete_node);	
+}
+
+void delete_node_only_has_right_child_left(node *parent_delete_node, node* delete_node, size_t *N)
+{
+	parent_delete_node->left = delete_node->right;
+	(*N)--;
+	free(delete_node);
+}
+
+void delete_node_only_has_left_child_right(node *parent_delete_node, node* delete_node, size_t *N)
+{
+	parent_delete_node->right = delete_node->left;
+	(*N)--;
+	free(delete_node);
+}
+
+void delete_node_only_has_right_child_right(node *parent_delete_node, node* delete_node, size_t *N)
+{
+	parent_delete_node->right = delete_node->right;	
+	(*N)--;
+	free(delete_node);
+}
+
+void delete_node_has_no_child(node *parent_delete_node, node* delete_node, size_t *N)
+{
+	(*N)--;
+	if(delete_node == parent_delete_node->left) parent_delete_node->left = tail;
+	else if(delete_node == parent_delete_node->right) parent_delete_node->right = tail;
+	free(delete_node);
+}

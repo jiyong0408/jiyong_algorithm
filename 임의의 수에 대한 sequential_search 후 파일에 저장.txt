@@ -1,0 +1,158 @@
+//sequential_search
+#pragma warning(disable:4996)
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 30
+#define size_data 4
+#define str(i) ((char*)str + (i) * size_data)
+
+
+int compare(const void *a, const void *b);
+int sequential_search(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b));
+void sequential_search_first(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b));
+void insert_search(void *str, void *ch, size_t *nlen, size_t size);
+void delete_search(void *str, void *ch, size_t *nlen, size_t size);
+void print(void *str, size_t nlen);
+
+
+void main()
+{
+	srand(time(NULL));
+	printf("sequential searching\n");
+	void *str;
+	void *temp;
+	char *temp_str;
+	temp_str = (char*)calloc(SIZE, 1);
+	int end = -1;
+	size_t nlen = SIZE;
+	temp = malloc(size_data);
+	str = (void*)calloc(SIZE, size_data);
+	for (int i = 0; i < SIZE; i++)
+	{
+		*str(i) = rand() % SIZE + 1;
+	}
+	print(str, nlen);
+
+	while (1)
+	{
+		printf("find / delete / insert/ end\n");
+		printf("enter\n");
+		scanf("%s", temp_str);
+		getchar();
+		int j = strlen(temp_str);
+		if (!memcmp(temp_str, "end", j)) break;
+		else if (!memcmp(temp_str, "find", j))
+		{
+			printf("find ? : ");
+			scanf("%d", temp);
+			getchar();
+			sequential_search_first(str, temp, nlen, size_data, compare);
+			print(str, nlen);
+		}
+		else if (!memcmp(temp_str, "delete", j))
+		{
+			printf("delete ? : ");
+			scanf("%d", temp);
+			getchar();
+			delete_search(str, temp, &nlen, size_data);
+			print(str, nlen);
+		}
+		else if (!memcmp(temp_str, "insert", j))
+		{
+			printf("insert ? : ");
+			scanf("%d", temp);
+			getchar();
+			insert_search(str, temp, &nlen, size_data);
+			print(str, nlen);
+		}
+		else printf("error\n");
+	}
+
+	FILE *fp;
+	fp = fopen("result.csv", "w");
+	for (int i = 0; i < nlen; i++)
+	{
+		fprintf(fp, "%d ", *str(i));
+	}
+	fclose(fp);
+	free(temp);
+	free(str);
+	free(temp_str);
+}
+
+int sequential_search(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b))
+{
+	int i = 0;
+
+	while (compare(str(i), ch) && i <= (nlen - 1)) i++;
+	if (i > nlen - 1)
+	{
+		printf("찾는것이 없습니다.\n");
+		return 0;
+	}
+	else
+	{
+		printf("%d에 있습니다.\n", i);
+		return i;
+	}
+}
+//방금 검색한걸 배열의 맨앞자리로 보내고 그리고 나머지는 한칸씩 밀림
+void sequential_search_first(void *str, void *ch, size_t nlen, size_t size, int compare(const void *a, const void *b))
+{
+	int i = 0;
+	void *temp;
+	temp = malloc(size);
+	if (i = sequential_search(str, ch, nlen, size, compare))
+	{
+		memcpy(temp, str(i), size);
+		while (1)
+		{
+			i--;
+			if (i < 0) break;
+			memcpy(str(i + 1), str(i), size);
+		}
+		memcpy(str(0), temp, size);
+	}
+	free(temp);
+}
+
+//0보다 크면 a가 크다
+int compare(const void *a, const void *b)
+{
+	return *(int*)a - *(int*)b;
+}
+
+void insert_search(void *str, void *ch, size_t *nlen, size_t size)
+{
+	if (*nlen < SIZE) memcpy(str((*nlen)++), ch, size);
+	else printf("꽉 찼습니다.\n");
+}
+
+void delete_search(void *str, void *ch, size_t *nlen, size_t size)
+{
+	int i = 0;
+	while (compare(str(i), ch) && i <= (*nlen - 1)) i++;
+	if (i > (*nlen - 1)) printf("지우고자 하는게 없어요. \n");
+	else
+	{
+		while (1)
+		{
+			if (i == (*nlen - 1))
+			{
+				memcpy(str(i), "\0", size);
+				--*nlen;
+				break;
+			}
+			memcpy(str(i), str(i+1), size);
+			i++;
+		}
+	}
+}
+
+void print(void *str, size_t nlen)
+{
+	for (int i = 0; i < nlen; i++) printf("%d ", *str(i));
+	printf("\n");
+}

@@ -1,0 +1,245 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#define SIZE 9
+#define width 1
+#define maxlength 12
+int stack_for_push_pop[SIZE] = { 0, };
+int top = -1;
+
+int flag_delete = 0;
+int comp_int(const void *a, const void *b);
+int comp_char(const void *a, const void *b);
+void print_array(char *array[SIZE], size_t nlen);
+void init_stack();
+void push(int key);
+int pop();
+void random_quick_sort_non_recursive_and_insertion_sort(void *array, int N, int size_data, int comp(const void *, const void *));
+int binary_search(void *key, void *base, size_t size_data, size_t nlen, int compare(const void *a, const void *b));
+void insert(void *key, void *base, size_t size_data, size_t *nlen, int compare(const void *a, const void *b));
+void delete_all(void *key, void *base, size_t size_data, size_t *nlen, int compare(const void *a, const void *b));
+
+void read_file(char *input[], int N, char *filename)
+{
+	int k;
+	FILE *fp;
+	fp = fopen(filename, "r");
+	for (k = 0; k < N; k++)
+	{
+			fscanf(fp, "%s\n", input[k]);
+	}
+	fclose(fp);
+}
+
+int main()
+{
+	char *words[SIZE];
+	char initial[SIZE] = { 0, };
+	size_t size = SIZE;
+	for (int i = 0; i < size; i++)
+	{
+		words[i] = (char*)calloc(maxlength, width);
+	}
+
+	int nlen = strlen("text.txt");
+	char key = 't';
+	char *filename = (char*)calloc(nlen + 1, sizeof(char));
+	strcpy(filename, "text.txt");
+	read_file(words, size, filename);
+	print_array(words, SIZE);
+
+	for (int i = 0; i < size; i++)
+	{
+		initial[i] = words[i][0];
+	}
+	while (!flag_delete)
+	{
+		delete_all(&key, initial, width, &size, comp_char);
+		for (int i = 0; i < size; i++)
+		{
+			printf("%c ", initial[i]);
+		}
+		printf("\n");
+	}
+	print_array(words, SIZE);
+
+	free(filename);
+	for (int i = 0; i < size; i++)
+	{
+		free(words[i]);
+	}
+}
+
+int binary_search(void *key, void *base, size_t size_data, size_t nlen, int compare(const void *a, const void *b))
+{
+	//i = left, j = right
+	int mid;
+	int i = 0;
+	int j = nlen - 1;
+	while (1)
+	{
+		mid = ((j - i) / 2) + i;
+
+		if (compare(key, (char*)base + mid * size_data) == 0)
+		{
+			flag_delete = 0;
+			printf("%d번째에 값이 있습니다. \n", mid);
+			return mid;
+		}
+		else if (compare(key, (char*)base + mid * size_data) > 0)
+		{
+			if (i == j || i > nlen)
+			{
+				flag_delete = 1;
+				printf("찾는 값이 없습니다.\n");
+				return i;
+			}
+			i = mid + 1;
+		}
+		else if (compare(key, (char*)base + mid * size_data) < 0)
+		{
+			if (i == j || j < 0)
+			{
+				flag_delete = 0;
+				printf("찾는 값이 없습니다.\n");
+				return j;
+			}
+			j = mid - 1;
+		}
+	}
+}
+//반환된 값의 바로 뒤에 삽입하는 값을 넣는다.
+void insert(void *key, void *base, size_t size_data, size_t *nlen, int compare(const void *a, const void *b))
+{
+	int insert_number = binary_search(key, base, size_data, *nlen, compare) + 1;
+	printf("%d\n", insert_number);
+	++*nlen;
+	int i = *nlen - 1;
+	printf("%d\n", *nlen);
+
+	//자연수라고하자 그냥
+	if (insert_number == *nlen)
+	{
+		memcpy((char*)base + insert_number * size_data, key, size_data);
+	}
+	else if (insert_number != *nlen)
+	{
+		while (1)
+		{
+			if (i < insert_number) break;
+			memcpy((char*)base + (i + 1) * size_data, (char*)base + i * size_data, size_data);
+			i--;
+		}
+		memcpy((char*)base + insert_number * size_data, key, size_data);
+	}
+}
+
+void delete_all(void *key, void *base, size_t size_data, size_t *nlen, int compare(const void *a, const void *b))
+{
+	int delete_number = binary_search(key, base, size_data, *nlen, compare);
+	if (!flag_delete)
+	{
+		--*nlen;
+		while (1)
+		{
+			if (delete_number == *nlen) break;
+			memcpy((char*)base + delete_number * size_data, (char*)base + (delete_number + 1) * size_data, size_data);
+			delete_number++;
+		}
+	}
+}
+
+int comp_char(const void *a, const void *b)
+{
+	//양수면 a가 더 크다.
+	return *(char*)a - *(char*)b;
+}
+
+int comp_int(const void *a, const void *b)
+{
+	//양수면 a가 더 크다.
+	return *(int*)a - *(int*)b;
+}
+
+void random_quick_sort_non_recursive_and_insertion_sort(void *array, int N, int size_data, int comp(const void *, const void *))
+{
+	//i = Left , j = Right
+	void* temp;
+	temp = malloc(size_data);
+	push(0);
+	push(N - 1);
+
+	while (1)
+	{
+		if (top < 0) break;
+		int R = pop();
+		int L = pop();
+		if (R - L + 1 > 1)
+		{
+			int random = (rand() % (R - L + 1)) + L;
+			void *pivot;
+			pivot = malloc(size_data);
+			memcpy(pivot, (char*)array + random * size_data, size_data);
+			memcpy((char*)array + random * size_data, (char*)array + R * size_data, size_data);
+			memcpy((char*)array + R * size_data, pivot, size_data);
+			int i = L;
+			int j = R - 1;
+
+			while (1)
+			{
+				if (comp((char*)array + i * size_data, pivot) < 0) i++;
+				if (comp((char*)array + j * size_data, pivot) > 0) j--;
+
+				if (i > j)
+				{
+					memcpy(((char*)array + R * size_data), ((char*)array + i * size_data), size_data);
+					memcpy(((char*)array + i * size_data), pivot, size_data);
+					push(L);
+					push(i - 1);
+
+					push(i + 1);
+					push(R);
+					break;
+				}
+
+				if (comp((char*)array + i * size_data, pivot) >= 0 && comp((char*)array + j * size_data, pivot) <= 0)
+				{
+
+					memcpy(temp, (char*)array + i * size_data, size_data);
+					memcpy((char*)array + i * size_data, (char*)array + j * size_data, size_data);
+					memcpy((char*)array + j * size_data, temp, size_data);
+					i++;
+					j--;
+				}
+			}
+			free(pivot);
+		}
+	}
+	free(temp);
+}
+
+void init_stack()
+{
+	top = -1;
+}
+
+void push(int key)
+{
+	stack_for_push_pop[++top] = key;
+}
+
+int pop()
+{
+	return stack_for_push_pop[top--];
+}
+
+void print_array(char *array[SIZE], size_t nlen)
+{
+	for (int i = 0; i < nlen; i++)
+	{
+		printf("%s ", array[i]);
+	}
+	printf("\n");
+}

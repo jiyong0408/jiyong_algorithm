@@ -1,0 +1,137 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define size_data 1
+
+
+typedef struct _node {
+	struct _node *next;
+}node;
+
+
+int compare(const void *a, const void *b);
+void init_node(node **p);
+void search(void *key, node **base, size_t size, size_t width, size_t nlen, int compare(const void *a, const void *b));
+node *insert(void *key, node *base, size_t size, size_t width, size_t *nlen);
+int compare(const void *a, const void *b);
+//void delete_all(node **p);
+void print_list(node **p);
+
+void main()
+{
+	//리스트의 길이
+
+	size_t num = 0;
+	char *stack;
+	stack = (char*)calloc(11, sizeof(char));
+	strcpy(stack, "ABCDEFGHIM");
+
+	node *t, *t_insert;
+	int str_len = strlen(stack);
+	init_node(&t);
+	t_insert = t;
+
+	while (str_len != 0)
+	{
+		t_insert = insert(stack + (str_len - 1), t_insert, size_data, sizeof(node), &num);
+		str_len--;
+	}
+	char a = 'F';
+	print_list(&t);
+	search(&a, &t, size_data, sizeof(node), num, compare);
+//	delete_all(p);
+
+	free(t_insert);
+	free(stack);
+	free(t);
+}
+
+int compare(const void *a, const void *b)
+{
+	return *(char*)a - *(char*)b;
+}
+
+//노드형 포인터에 대한 주소값을 가지는 p
+void init_node(node **p)
+{
+	//p가 가리키는 노드형 포인터가 가리키는 공간에 node사이즈의 크기를 메모리 할당해라.
+	*p = (node*)malloc(sizeof(node));
+	//p가 가리키는 공간의 주소를 가져오고 그 주소가 가리키는 곳의 next에 NULL을 할당해라.
+	(*p)->next = NULL;
+}
+//width = sizeof(node), size = sizeof(key)
+node *insert(void *key, node *base, size_t size, size_t width, size_t *nlen)
+{
+	node *temp;
+	temp = (node*)malloc(width + size);
+	memcpy(temp + 1, key, size);
+	temp->next = NULL;
+	base->next = temp;
+	++*nlen;
+	return temp;
+}
+//(*p)->next부터 첫번째리스트부터 NULL까지 or 리스트의 길이만큼 key값과 현재 key값이 같은지 비교
+void search(void *key, node **base, size_t size, size_t width, size_t nlen, int compare(const void *a, const void *b))
+{
+	node *temp;
+	int i = 1;
+	temp = (*base) -> next;
+	if (nlen > 0 && temp != NULL)
+	{
+		while (1)
+		{
+			if (compare(key, temp + 1) == 0 || temp == NULL)
+			{
+				if (temp == NULL) printf("찾는게 없습니다.\n");
+				else printf("%d번째에 찾는게 있습니다.\n", i);
+				break;
+			}
+			else
+			{
+				i++;
+				temp = temp->next;
+			}
+		}	
+	}
+	else printf("리스트가 비어있습니다.\n");
+	free(temp);
+}
+
+void print_list(node **p)
+{
+	node *temp;
+	temp = (*p)->next;
+	//1번째 key가 들어있는 공간
+	printf("현재 리스트 : ");
+	if (temp == NULL) printf("비어있습니다.");
+	while (temp != NULL)
+	{
+		printf("%c ", *(char*)(temp + 1));
+		temp = temp->next;
+	}
+	printf("\n");
+	free(temp);
+}
+
+/*void delete_all(node **p)
+{
+	node *temp = (*p)->next;
+	if (temp == NULL)
+	{
+		free(temp);
+		printf("이미 비어있습니다. \n");
+	}
+	else
+	{
+		node *temp_next = temp->next;
+		while (temp != NULL)
+		{
+			free(temp);
+			temp = temp_next;
+			temp_next = temp_next->next;
+		}
+		(*p)->next = NULL;
+		free(temp_next);
+	}
+}*/
